@@ -10,7 +10,9 @@ export class SingleBrowserSessionManager {
   private userDataDir: string;
 
   private constructor() {
-    this.userDataDir = path.join(process.cwd(), ".playwright-session");
+    // Use /data for Docker persistence, fallback to cwd for local dev
+    this.userDataDir = process.env.PLAYWRIGHT_USER_DATA_DIR ||
+      path.join(process.cwd(), ".playwright-session");
   }
 
   static getInstance(): SingleBrowserSessionManager {
@@ -32,16 +34,21 @@ export class SingleBrowserSessionManager {
       await this.killExistingChromiumProcesses();
 
       // Use launchPersistentContext when using userDataDir
+      // Check if running in Docker/container (no-sandbox needed)
+      const isContainer = process.env.PLAYWRIGHT_NO_SANDBOX === "1";
+      const chromeArgs = [
+        "--disable-web-security",
+        "--disable-features=VizDisplayCompositor",
+        "--no-first-run",
+        "--disable-default-apps",
+        ...(isContainer ? ["--no-sandbox", "--disable-setuid-sandbox"] : []),
+      ];
+
       this.context = await playwright.chromium.launchPersistentContext(
         this.userDataDir,
         {
           headless: false,
-          args: [
-            "--disable-web-security",
-            "--disable-features=VizDisplayCompositor",
-            "--no-first-run",
-            "--disable-default-apps",
-          ],
+          args: chromeArgs,
           viewport: { width: 1280, height: 720 },
           userAgent:
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
