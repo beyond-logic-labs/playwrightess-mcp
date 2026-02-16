@@ -208,10 +208,6 @@ class PlaywrightMCPServer {
 
   private async ensurePlaywrightInitialized() {
     // Check if Playwright instances are already available in the context
-    const browser = vm.runInContext(
-      "typeof browser !== 'undefined' ? browser : null",
-      this.context
-    );
     const context = vm.runInContext(
       "typeof context !== 'undefined' ? context : null",
       this.context
@@ -221,11 +217,16 @@ class PlaywrightMCPServer {
       this.context
     );
 
-    if (!browser || !context || !page) {
+    if (!context || !page) {
       // Initialize session manager instances
-      const browserInstance = await this.sessionManager.ensureBrowser();
+      // ensureBrowser() creates the persistent context internally
+      await this.sessionManager.ensureBrowser();
       const contextInstance = await this.sessionManager.ensureContext();
       const pageInstance = await this.sessionManager.ensurePage();
+
+      // For persistent contexts, browser() returns null.
+      // Expose the context as "browser" too so scripts referencing browser still work.
+      const browserInstance = this.sessionManager.getBrowser() || contextInstance;
 
       // Add them to the VM context
       this.context.browser = browserInstance;

@@ -30,7 +30,7 @@ export class SingleBrowserSessionManager {
   }
 
   async ensureBrowser(): Promise<playwright.Browser> {
-    if (!this.browser || !this.browser.isConnected()) {
+    if (!this.context) {
       await this.killExistingChromiumProcesses();
 
       // Use launchPersistentContext when using userDataDir
@@ -56,11 +56,15 @@ export class SingleBrowserSessionManager {
         },
       );
 
-      // Get the browser from the persistent context
-      this.browser = this.context.browser()!;
+      // launchPersistentContext returns a BrowserContext directly.
+      // context.browser() returns null for persistent contexts (documented Playwright behavior).
+      // Store browser ref if available, but don't depend on it.
+      this.browser = this.context.browser();
 
-      this.browser.on("disconnected", () => {
-        console.error("Browser disconnected unexpectedly");
+      // Listen on context close instead of browser disconnected,
+      // since persistent contexts don't expose a Browser object.
+      this.context.on("close", () => {
+        console.error("Browser context closed unexpectedly");
         this.browser = null;
         this.context = null;
         this.page = null;
@@ -69,12 +73,12 @@ export class SingleBrowserSessionManager {
       this.context.setDefaultNavigationTimeout(8000);
       this.context.setDefaultTimeout(8000);
     }
-    return this.browser;
+    // Return browser if available, otherwise return a proxy that delegates to context
+    return this.browser!;
   }
 
   async ensureContext(): Promise<playwright.BrowserContext> {
     if (!this.context) {
-      // Context is now created in ensureBrowser() via launchPersistentContext
       await this.ensureBrowser();
     }
     return this.context!;
