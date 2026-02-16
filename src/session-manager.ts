@@ -39,6 +39,7 @@ export class SingleBrowserSessionManager {
       const chromeArgs = [
         "--disable-web-security",
         "--disable-features=VizDisplayCompositor",
+        "--disable-blink-features=AutomationControlled",
         "--disable-gpu",
         "--no-first-run",
         "--disable-default-apps",
@@ -55,6 +56,11 @@ export class SingleBrowserSessionManager {
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         },
       );
+
+      // Hide navigator.webdriver to avoid bot detection
+      await this.context.addInitScript(() => {
+        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+      });
 
       // launchPersistentContext returns a BrowserContext directly.
       // context.browser() returns null for persistent contexts (documented Playwright behavior).
