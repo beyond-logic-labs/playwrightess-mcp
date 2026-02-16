@@ -7,7 +7,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import * as vm from "node:vm";
-import * as playwright from "playwright";
+import * as playwright from "rebrowser-playwright";
 import { createRequire } from "node:module";
 import assert from "node:assert";
 import { SingleBrowserSessionManager } from "./session-manager.js";

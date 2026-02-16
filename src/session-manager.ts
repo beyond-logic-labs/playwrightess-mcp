@@ -1,4 +1,4 @@
-import * as playwright from "playwright";
+import * as playwright from "rebrowser-playwright";
 import * as path from "path";
 import { spawn } from "child_process";
 

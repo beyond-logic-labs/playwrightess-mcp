@@ -16,7 +16,7 @@
     "@babel/traverse": "^7.28.3",
     "@babel/types": "^7.28.2",
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "playwright": "^1.40.0"
+    "rebrowser-playwright": "^1.52.0"
   },
   "devDependencies": {
     "@types/babel__generator": "^7.27.0",
