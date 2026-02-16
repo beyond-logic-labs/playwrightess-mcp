@@ -39,6 +39,7 @@ export class SingleBrowserSessionManager {
       const chromeArgs = [
         "--disable-web-security",
         "--disable-features=VizDisplayCompositor",
+        "--disable-gpu",
         "--no-first-run",
         "--disable-default-apps",
         ...(isContainer ? ["--no-sandbox", "--disable-setuid-sandbox"] : []),
